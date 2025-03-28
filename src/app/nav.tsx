@@ -1,5 +1,5 @@
-import SignInButton from "@/components/ui/signInButton";
-import SignOutButton from "@/components/ui/signOutButton";
+import SignInButton from "@/components/ui/SignInButton";
+import SignOutButton from "@/components/ui/SignOutButton";
 import { auth } from "@/lib/auth";
 import Link from "next/link";
 
@@ -13,6 +13,11 @@ export default async function Nav() {
             </Link>
             <ul className="flex space-x-4">
                 <li>{session?.user ? <SignOutButton /> : <SignInButton />}</li>
+            </ul>
+            <ul className="flex space-x-4">
+                <li>
+                    <Link href={"/dashboard"}>Dashboard</Link>
+                </li>
             </ul>
         </nav>
     );

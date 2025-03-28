@@ -13,9 +13,13 @@ Stack:
 
 -   Node.js - Server Runtime
 -   Next.js - React Framework
--   MongoDB - User DB (also works natively with agenda)
+-   PostgreSQL (hosted by Neon) - User DB
+-   Prisma - ORM for working with Postgres
+-   MongoDB - Scheduled Posts DB (works natively with Angend)
 -   Agenda - Scheduling Library
+-   AWS S3 - object storage for images and videos
 -   Tailwind - Styling
+-   shadcn/ui - Component Library
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
