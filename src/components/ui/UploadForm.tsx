@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+// import ffmpeg from "ffmpeg";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -13,9 +14,16 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 
-const MAX_FILE_SIZE = 30e6; // 30 MB in bytes
+const MAX_FILE_SIZE = 30e7; // 300 MB in bytes
 const ACCEPTED_FILE_TYPES = [
     "image/jpeg",
     "image/jpg",
@@ -24,7 +32,8 @@ const ACCEPTED_FILE_TYPES = [
 ];
 
 const formSchema = z.object({
-    image: z
+    type: z.enum(["video", "pics"]),
+    files: z
         .instanceof(FileList)
         .refine((files) => files?.length >= 1, "File is required.")
         .refine(
@@ -33,53 +42,72 @@ const formSchema = z.object({
                     ACCEPTED_FILE_TYPES.includes(file.type)
                 ),
             // ACCEPTED_IMAGE_TYPES.includes(files[0].type),
-            "jpg, png, webp formats are supported."
+            "Only jpg, mp4, & mov formats are supported."
         )
         .refine(
-            (files) => files[0].size <= MAX_FILE_SIZE,
+            (files) =>
+                Array.from(files).every((file) => file.size <= MAX_FILE_SIZE),
             `File size should not exceed ${MAX_FILE_SIZE / 1e6} MB.` // Convert bytes to MB for the error message
         ),
 });
 
 export default function UploadForm() {
-    // 1. Define your form.
+    // Form definition
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
     });
 
-    // 2. Define a submit handler.
+    // Submit handler
     function onSubmit(values: z.infer<typeof formSchema>) {
-        const uploadImage = async () => {
-            // Get a signed URL from the server to upload the image to S3
-            const { url } = await fetch("/api/s3").then((res) => res.json());
+        const uploadMedia = async () => {
+            // Get list of file extensions
+            const exts = [];
+            for (const file of values.files) {
+                exts.push(file.name.split(".").pop());
+            }
 
-            // upload the image to S3 using the signed URL
-            const s3Response = await fetch(url, {
-                method: "PUT",
+            // Get signed URLs from the server to upload the image to S3
+            const { urls } = await fetch("/api/s3", {
+                method: "POST",
                 headers: {
-                    "Content-Type": "image/jpeg", // Set the content type to the file type
+                    "Content-Type": "application/json",
                 },
-                body: values.image[0],
-            });
+                body: JSON.stringify({ exts }),
+            }).then((res) => res.json());
+
+            const fileNames: string[] = [];
+
+            for (let i = 0; i < values.files.length; i++) {
+                // upload media to S3 using the signed URL
+                const s3Response = await fetch(urls[i], {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": values.files[i].type, // Set the content type to the file type
+                    },
+                    body: values.files[i],
+                });
+
+                if (s3Response.ok) {
+                    const fileName = s3Response.url
+                        .split("?")[0]
+                        .split("/")
+                        .pop() as string;
+                    fileNames.push(fileName);
+                } else {
+                    // TODO Handle the error
+                }
+            }
 
             //if the upload is successful, send request to backend to post image to instagram
-            if (s3Response.ok) {
-                // Extract the file name from the URL
-                const fileName = s3Response.url
-                    .split("?")[0]
-                    .split("/")
-                    .pop() as string;
-                // send post request to backend
-                const res = await fetch("/api/post", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ fileName }),
-                });
-            }
+            await fetch("/api/post", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ type: values.type, fileNames }),
+            });
         };
-        uploadImage();
+        uploadMedia();
     }
 
     return (
@@ -87,25 +115,58 @@ export default function UploadForm() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <FormField
                     control={form.control}
-                    name="image"
+                    name="type"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Image</FormLabel>
+                            <FormLabel>Post Type</FormLabel>
+                            <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                            >
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a content type" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="video">Video</SelectItem>
+                                    <SelectItem value="pics">Pics</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormDescription>
+                                Select Video to upload short form content (IG
+                                Reels, TikTok)
+                                <br />
+                                Select Pics to upload a single image or a
+                                carousel
+                            </FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="files"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Media</FormLabel>
                             <FormControl>
                                 <Input
-                                    id="image"
+                                    id="files"
                                     type="file"
                                     onChange={(e) =>
                                         field.onChange(e.target.files)
                                     }
-                                    multiple={false}
+                                    multiple={true}
                                     onBlur={field.onBlur}
                                     name={field.name}
                                     ref={field.ref}
                                 />
                             </FormControl>
                             <FormDescription>
-                                The image you would like to upload
+                                {form.watch("type") === "video"
+                                    ? "Upload a video file (mp4 or mov) with a maximum size of 30 MB."
+                                    : "Upload one or more image files (jpg) with a maximum size of 30 MB each."}
                             </FormDescription>
                             <FormMessage />
                         </FormItem>

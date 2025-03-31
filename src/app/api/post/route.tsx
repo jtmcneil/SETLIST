@@ -1,8 +1,21 @@
-import { createInstagramPost } from "@/lib/instagram";
+import { createInstagramPost, createInstagramReel } from "@/lib/instagram";
 
 export async function POST(req: Request) {
-    const { fileName } = await req.json();
-    // console.log(`https://media.setlistt.com/${fileName}`);
-    createInstagramPost(`http://media.setlistt.com/${fileName}`); // TODO: should probably switch this to https, but need certificates for it to work
-    return new Response();
+    const { type, fileNames } = await req.json();
+
+    if (!fileNames || fileNames.length === 0) {
+        // TODO Handle the error
+    } else if (type === "video") {
+        const media = await createInstagramReel(
+            `http://media.setlistt.com/${fileNames[0]}`
+        );
+        return new Response(JSON.stringify(media));
+    } else if (type === "pics") {
+        const media = await createInstagramPost(
+            fileNames.map(
+                (fileName: string) => `http://media.setlistt.com/${fileName}`
+            )
+        );
+        return new Response(JSON.stringify(media));
+    }
 }
