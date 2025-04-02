@@ -3,8 +3,8 @@
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-// import ffmpeg from "ffmpeg";
 import { Button } from "@/components/ui/button";
+import { load, transcode } from "@/lib/ffmpeg";
 import {
     Form,
     FormControl,
@@ -66,6 +66,13 @@ export default function UploadForm() {
                 exts.push(file.name.split(".").pop());
             }
 
+            let videoFile: File | null = null;
+            // transcode video
+            if (values.type === "video") {
+                const ffmpeg = await load();
+                videoFile = await transcode(ffmpeg, values.files[0]);
+            }
+
             // Get signed URLs from the server to upload the image to S3
             const { urls } = await fetch("/api/s3", {
                 method: "POST",
@@ -84,7 +91,7 @@ export default function UploadForm() {
                     headers: {
                         "Content-Type": values.files[i].type, // Set the content type to the file type
                     },
-                    body: values.files[i],
+                    body: videoFile,
                 });
 
                 if (s3Response.ok) {
