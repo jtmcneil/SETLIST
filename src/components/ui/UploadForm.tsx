@@ -91,7 +91,7 @@ export default function UploadForm() {
                     headers: {
                         "Content-Type": values.files[i].type, // Set the content type to the file type
                     },
-                    body: videoFile,
+                    body: values.type === "video" ? videoFile : values.files[i],
                 });
 
                 if (s3Response.ok) {
