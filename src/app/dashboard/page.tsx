@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
-import TikTokButton from "@/components/ui/TikTokButton";
-import YouTubeButton from "@/components/ui/YouTubeButton";
-import InstagramButton from "@/components/ui/InstagramButton";
+import TikTokButton from "@/components/buttons/TikTokButton";
+import YouTubeButton from "@/components/buttons/YouTubeButton";
+import InstagramButton from "@/components/buttons/InstagramButton";
 import { checkAuth } from "@/lib/auth";
 import { createInstagramPost } from "@/lib/instagram";
 import Link from "next/link";
@@ -14,7 +14,7 @@ export default async function Dashboard() {
     // );
 
     return (
-        <main className="flex min-h-screen flex-col items-center justify-center p-24">
+        <div className="flex min-h-screen flex-col items-center justify-center p-24">
             <div className="flex w-5 justify-center space-x-4 m-4">
                 <InstagramButton />
                 <YouTubeButton />
@@ -26,6 +26,6 @@ export default async function Dashboard() {
                 </Button>
                 <Button>Schedule post</Button>
             </div>
-        </main>
+        </div>
     );
 }

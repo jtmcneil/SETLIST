@@ -51,7 +51,7 @@ const formSchema = z.object({
         ),
 });
 
-export default function UploadForm() {
+export default function UploadVidForm() {
     // Form definition
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),

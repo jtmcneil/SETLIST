@@ -2,7 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+@theme {
+    --font-display: "Rock Salt", "sans-serif";
+}
+
 @layer base {
+    @font-face {
+        font-family: "Rock Salt";
+        src: url("https://fonts.googleapis.com/css2?family=Rock+Salt&display=swap");
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+    }
+
     :root {
         --background: 0 0% 100%;
 
@@ -105,11 +117,13 @@
     }
 }
 
-@layer base {
-    * {
-        @apply border-border;
-    }
-    body {
-        @apply bg-background text-foreground;
+@layer components {
+    .paper {
+        background: repeating-linear-gradient(
+            180deg,
+            rgba(148, 175, 196, 0.2),
+            rgb(255, 255, 255) 1px,
+            rgb(255, 255, 255) 20px
+        );
     }
 }

@@ -1,4 +1,4 @@
-import { Button } from "./button";
+import { Button } from "../ui/button";
 import { FaInstagram } from "react-icons/fa";
 import Link from "next/link";
 

@@ -3,6 +3,7 @@ import Image from "next/image";
 
 interface Props {
     username: string;
+    aviUrl: string;
     location: string;
     imageUrl: string;
     caption: string;
@@ -10,12 +11,15 @@ interface Props {
 
 export default function InstagramPost(props: Props) {
     return (
-        <div className="bg-gray-100 p-4">
+        <div className="bg-gray-100 p-2">
             <div className="bg-white border rounded-sm max-w-md">
                 <div className="flex items-center px-4 py-3">
-                    <img
+                    <Image
                         className="h-8 w-8 rounded-full"
-                        src="https://picsum.photos/id/1027/150/150"
+                        src={props.aviUrl}
+                        alt="your profile image"
+                        height={300} // Set the height of the image
+                        width={300} // Set the width of the image
                     />
                     <div className="ml-3 ">
                         <span className="text-sm font-semibold antialiased block leading-tight">
@@ -27,7 +31,7 @@ export default function InstagramPost(props: Props) {
                     </div>
                 </div>
                 <Image
-                    src={props.imageUrl ? props.imageUrl : ""}
+                    src={props.imageUrl}
                     width={500} // Set the width of the image
                     height={500} // Set the height of the image
                     alt="your image"
@@ -74,8 +78,14 @@ export default function InstagramPost(props: Props) {
                         </svg>
                     </div>
                 </div>
-                <div className="font-semibold text-sm mx-4 mt-2 mb-4">
-                    92,372 likes
+                <div className="font-semibold text-sm mx-4 mt-2">
+                    Liked by SZA and others
+                </div>
+                <div className="flex gap-1 mx-4 mb-4">
+                    <p className="text-sm">
+                        <span className="font-bold">{props.username} </span>
+                        {props.caption}
+                    </p>
                 </div>
             </div>
         </div>

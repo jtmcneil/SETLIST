@@ -1,12 +1,45 @@
-import UploadForm from "@/components/ui/UploadForm";
+"use client";
+
+import { useState } from "react";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import UploadPicsForm from "@/components/forms/UploadPicsForm";
+import UploadVidForm from "@/components/forms/UploadVidForm";
+import InstagramPost from "@/components/screens/InstagramPost";
 
 export default function PostPage() {
-    // This is a placeholder for the post page.
-    // You can add logic to handle displaying a specific post or creating a new post.
+    const [type, setType] = useState("pics");
+    const [caption, setCaption] = useState("");
 
     return (
-        <main className="flex min-h-screen items-center justify-center p-24">
-            <UploadForm />
-        </main>
+        <div className="flex flex-col m-10 p-10 rounded-2xl bg-white shadow-inner bg-gray-50 justify-between gap-4">
+            <div className="flex flex-col gap-4 mb-4 pb-4 border-b-2">
+                <h1 className="text-3xl font-bold">Post up‼️</h1>
+                <p>
+                    Select the type of content you want to upload, then go
+                    bananas 🍌🍌🍌
+                </p>
+                <Select onValueChange={setType} defaultValue={type}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Theme" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="vid">Vid</SelectItem>
+                        <SelectItem value="pics">Pics</SelectItem>
+                        <SelectItem value="story" disabled>
+                            Story (coming soon)
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {type === "vid" && <UploadVidForm />}
+            {type === "pics" && <UploadPicsForm />}
+        </div>
     );
 }
