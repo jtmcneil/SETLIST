@@ -14,9 +14,11 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import InstagramPost from "../screens/InstagramPost";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 
 const MAX_FILE_SIZE = 30e7; // 300 MB in bytes
 const ACCEPTED_FILE_TYPES = [
@@ -25,8 +27,17 @@ const ACCEPTED_FILE_TYPES = [
     // "video/mp4",
     // "video/quicktime",
 ];
+const PLATFORMS = [
+    { id: "instagram", label: "Instagram" },
+    { id: "tiktok", label: "TikTok" },
+];
 
 const formSchema = z.object({
+    platforms: z
+        .array(z.string())
+        .refine((value) => value.some((item) => item), {
+            message: "You have to select at least one item.",
+        }),
     files: z
         .instanceof(FileList)
         .refine((files) => files?.length >= 1, "File is required.")
@@ -47,12 +58,16 @@ const formSchema = z.object({
 });
 
 export default function UploadPicsForm() {
+    const { data: session } = useSession();
     const [caption, setCaption] = useState<string>("");
     const [fileUrl, setFileUrl] = useState<string | null>(null);
 
     // Form definition
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
+        defaultValues: {
+            platforms: ["instagram", "tiktok"],
+        },
     });
 
     // Submit handler
@@ -96,13 +111,17 @@ export default function UploadPicsForm() {
                 }
             }
 
-            //if the upload is successful, send request to backend to post pics to instagram
-            await fetch("/api/post", {
+            //if the upload is successful, send request to backend to post pics
+            await fetch("/api/post/pics", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ fileNames }),
+                body: JSON.stringify({
+                    fileNames,
+                    caption,
+                    platforms: values.platforms,
+                }),
             });
         };
         uploadMedia();
@@ -116,6 +135,70 @@ export default function UploadPicsForm() {
                         onSubmit={form.handleSubmit(onSubmit)}
                         className="space-y-8"
                     >
+                        <FormField
+                            control={form.control}
+                            name="platforms"
+                            render={() => (
+                                <FormItem>
+                                    <div className="mb-4">
+                                        <FormLabel className="text-base">
+                                            Platforms
+                                        </FormLabel>
+                                        <FormDescription>
+                                            Select the platforms you want to
+                                            post to.
+                                        </FormDescription>
+                                    </div>
+                                    {PLATFORMS.map((platform) => (
+                                        <FormField
+                                            key={platform.id}
+                                            control={form.control}
+                                            name="platforms"
+                                            render={({ field }) => {
+                                                return (
+                                                    <FormItem
+                                                        key={platform.id}
+                                                        className="flex flex-row items-start space-x-3 space-y-0"
+                                                    >
+                                                        <FormControl>
+                                                            <Checkbox
+                                                                checked={field.value?.includes(
+                                                                    platform.id
+                                                                )}
+                                                                onCheckedChange={(
+                                                                    checked
+                                                                ) => {
+                                                                    return checked
+                                                                        ? field.onChange(
+                                                                              [
+                                                                                  ...field.value,
+                                                                                  platform.id,
+                                                                              ]
+                                                                          )
+                                                                        : field.onChange(
+                                                                              field.value?.filter(
+                                                                                  (
+                                                                                      value
+                                                                                  ) =>
+                                                                                      value !==
+                                                                                      platform.id
+                                                                              )
+                                                                          );
+                                                                }}
+                                                            />
+                                                        </FormControl>
+                                                        <FormLabel className="text-sm font-normal">
+                                                            {platform.label}
+                                                        </FormLabel>
+                                                    </FormItem>
+                                                );
+                                            }}
+                                        />
+                                    ))}
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                         <FormField
                             control={form.control}
                             name="files"
@@ -189,8 +272,8 @@ export default function UploadPicsForm() {
             </section>
             <section className="flex-1">
                 <InstagramPost
-                    username="username"
-                    aviUrl=""
+                    aviUrl={session?.user.accounts[0].avi_url} // TODO switch to insta
+                    username={session?.user.accounts[0].username} // TODO switch to insta
                     caption={caption}
                     imageUrl={fileUrl ? fileUrl : ""}
                     location=""

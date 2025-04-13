@@ -10,14 +10,13 @@ import {
 } from "@/components/ui/select";
 import UploadPicsForm from "@/components/forms/UploadPicsForm";
 import UploadVidForm from "@/components/forms/UploadVidForm";
-import InstagramPost from "@/components/screens/InstagramPost";
+import { SessionProvider } from "next-auth/react";
 
 export default function PostPage() {
     const [type, setType] = useState("pics");
-    const [caption, setCaption] = useState("");
 
     return (
-        <div className="flex flex-col m-10 p-10 rounded-2xl bg-white shadow-inner bg-gray-50 justify-between gap-4">
+        <div className="flex flex-col m-10 p-10 rounded-2xl shadow-inner bg-white justify-between gap-4">
             <div className="flex flex-col gap-4 mb-4 pb-4 border-b-2">
                 <h1 className="text-3xl font-bold">Post up‼️</h1>
                 <p>
@@ -37,9 +36,10 @@ export default function PostPage() {
                     </SelectContent>
                 </Select>
             </div>
-
-            {type === "vid" && <UploadVidForm />}
-            {type === "pics" && <UploadPicsForm />}
+            <SessionProvider>
+                {type === "vid" && <UploadVidForm />}
+                {type === "pics" && <UploadPicsForm />}
+            </SessionProvider>
         </div>
     );
 }

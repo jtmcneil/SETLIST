@@ -6,7 +6,7 @@ datasource db {
 generator client {
   provider = "prisma-client-js"
 }
- 
+
 model User {
   id            String          @id @default(cuid())
   name          String?
@@ -33,6 +33,9 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
+  
+  avi_url           String?
+  username          String?
  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

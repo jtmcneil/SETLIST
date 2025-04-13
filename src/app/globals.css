@@ -121,7 +121,7 @@
     .paper {
         background: repeating-linear-gradient(
             180deg,
-            rgba(148, 175, 196, 0.2),
+            rgba(148, 175, 196, 0.4),
             rgb(255, 255, 255) 1px,
             rgb(255, 255, 255) 20px
         );
