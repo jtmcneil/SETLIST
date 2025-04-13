@@ -16,7 +16,7 @@ export default function PostPage() {
     const [type, setType] = useState("pics");
 
     return (
-        <div className="flex flex-col m-10 p-10 rounded-2xl shadow-inner bg-white justify-between gap-4">
+        <div className="flex flex-col m-10 p-10 shadow-lg bg-white justify-between gap-4">
             <div className="flex flex-col gap-4 mb-4 pb-4 border-b-2">
                 <h1 className="text-3xl font-bold">Post up‼️</h1>
                 <p>
@@ -37,7 +37,7 @@ export default function PostPage() {
                 </Select>
             </div>
             <SessionProvider>
-                {type === "vid" && <UploadVidForm />}
+                {/* {type === "vid" && <UploadVidForm />} */}
                 {type === "pics" && <UploadPicsForm />}
             </SessionProvider>
         </div>

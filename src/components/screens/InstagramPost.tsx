@@ -11,8 +11,8 @@ interface Props {
 
 export default function InstagramPost(props: Props) {
     return (
-        <div className="paper shadow-inner rounded-lg p-4 flex justify-center items-center">
-            <div className="bg-white border rounded-sm max-w-md">
+        <div className="paper shadow-inner p-4 flex justify-center items-center">
+            <div className="bg-white border shadow-md max-w-md">
                 <div className="flex items-center px-4 py-3">
                     <Image
                         className="h-8 w-8 rounded-full"

@@ -32,35 +32,46 @@ const PLATFORMS = [
     { id: "tiktok", label: "TikTok" },
 ];
 
-const formSchema = z.object({
-    platforms: z
-        .array(z.string())
-        .refine((value) => value.some((item) => item), {
-            message: "You have to select at least one item.",
-        }),
-    files: z
-        .instanceof(FileList)
-        .refine((files) => files?.length >= 1, "File is required.")
-        .refine(
-            (files) =>
-                Array.from(files).every((file) =>
-                    ACCEPTED_FILE_TYPES.includes(file.type)
-                ),
-            // ACCEPTED_IMAGE_TYPES.includes(files[0].type),
-            "Only jpg, mp4, & mov formats are supported."
-        )
-        .refine(
-            (files) =>
-                Array.from(files).every((file) => file.size <= MAX_FILE_SIZE),
-            `File size should not exceed ${MAX_FILE_SIZE / 1e6} MB.` // Convert bytes to MB for the error message
-        ),
-    caption: z.string().optional(), // TODO - add validation for length
-});
-
 export default function UploadPicsForm() {
     const { data: session } = useSession();
     const [caption, setCaption] = useState<string>("");
     const [fileUrl, setFileUrl] = useState<string | null>(null);
+
+    // define schema
+    const formSchema = z.object({
+        platforms: z
+            .array(z.string())
+            .refine((value) => value.some((item) => item), {
+                message: "You have to select at least one item.",
+            }),
+        files:
+            typeof window === "undefined"
+                ? z.any() // Server-side fallback
+                : z
+                      .instanceof(FileList)
+                      .refine(
+                          (files) => files?.length >= 1,
+                          "File is required."
+                      )
+                      .refine(
+                          (files) =>
+                              Array.from(files).every((file) =>
+                                  ACCEPTED_FILE_TYPES.includes(file.type)
+                              ),
+                          // ACCEPTED_IMAGE_TYPES.includes(files[0].type),
+                          "Only jpg, mp4, & mov formats are supported."
+                      )
+                      .refine(
+                          (files) =>
+                              Array.from(files).every(
+                                  (file) => file.size <= MAX_FILE_SIZE
+                              ),
+                          `File size should not exceed ${
+                              MAX_FILE_SIZE / 1e6
+                          } MB.` // Convert bytes to MB for the error message
+                      ),
+        caption: z.string().optional(), // TODO - add validation for length
+    });
 
     // Form definition
     const form = useForm<z.infer<typeof formSchema>>({
@@ -81,6 +92,7 @@ export default function UploadPicsForm() {
 
             // Get signed URLs from the server to upload the image to S3
             const { urls } = await fetch("/api/s3", {
+                cache: "no-store",
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -93,6 +105,7 @@ export default function UploadPicsForm() {
             for (let i = 0; i < values.files.length; i++) {
                 // upload media to S3 using the signed URL
                 const s3Response = await fetch(urls[i], {
+                    cache: "no-store",
                     method: "PUT",
                     headers: {
                         "Content-Type": values.files[i].type, // Set the content type to the file type
@@ -113,6 +126,7 @@ export default function UploadPicsForm() {
 
             //if the upload is successful, send request to backend to post pics
             await fetch("/api/post/pics", {
+                cache: "no-store",
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

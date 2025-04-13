@@ -75,6 +75,7 @@ export default function UploadVidForm() {
 
             // Get signed URLs from the server to upload the image to S3
             const { urls } = await fetch("/api/s3", {
+                cache: "no-store",
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -87,6 +88,7 @@ export default function UploadVidForm() {
             for (let i = 0; i < values.files.length; i++) {
                 // upload media to S3 using the signed URL
                 const s3Response = await fetch(urls[i], {
+                    cache: "no-store",
                     method: "PUT",
                     headers: {
                         "Content-Type": values.files[i].type, // Set the content type to the file type
@@ -107,6 +109,7 @@ export default function UploadVidForm() {
 
             //if the upload is successful, send request to backend to post image to instagram
             await fetch("/api/post", {
+                cache: "no-store",
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

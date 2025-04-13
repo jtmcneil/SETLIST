@@ -1,3 +1,14 @@
+export interface OauthCallbackResponse {
+    code: string;
+    scopes: string;
+    state: string;
+    error: string;
+    error_description: string;
+}
+
+/**
+ * Error Response from API
+ */
 export interface ErrorResponse {
     error: string;
     error_description: string;
@@ -7,12 +18,12 @@ export interface ErrorResponse {
 /**
  * Response from token refresh or authorization code exchange
  */
-export interface RefreshTokenResponse {
+export interface TokenResponse {
     open_id: string;
     scope: string;
     access_token: string;
-    refresh_token: string;
     expires_in: number;
+    refresh_token: string;
     refresh_expires_in: number;
     token_type: string;
 }

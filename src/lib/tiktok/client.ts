@@ -1,6 +1,7 @@
 // src/lib/tiktok/client.ts
+import { use } from "react";
 import {
-    RefreshTokenResponse,
+    TokenResponse,
     UserDataResponse,
     PostCreationResponse,
     PhotoPostBody,
@@ -9,6 +10,8 @@ import {
 } from "./types";
 
 import { prisma } from "@/lib/prisma";
+import { InternalServerError, UnauthorizedError } from "@/types/errors";
+import { json } from "stream/consumers";
 
 /**
  * A client for interacting with the TikTok API with automatic token refresh
@@ -41,6 +44,88 @@ export class TikTokClient {
      * @returns The token exchange response
      */
     public exchangeCodeForToken(): void {}
+
+    /**
+     *
+     * @param userId - the user id to correlate the TikTok account with
+     * @throws if the user is unauthenticated
+     * @returns a promise that will resolve after the account is created
+     */
+    static async createAccount(userId: string, code: string): Promise<void> {
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+        });
+
+        if (!user) {
+            throw new UnauthorizedError("Unauthenticated Request");
+        }
+
+        // get access token
+        const accessTokenRes: TokenResponse | ErrorResponse = await fetch(
+            "https://open.tiktokapis.com/v2/oauth/token/",
+            {
+                cache: "no-store",
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: new URLSearchParams({
+                    client_key: process.env.TIKTOK_CLIENT_KEY!,
+                    client_secret: process.env.TIKTOK_CLIENT_SECRET!,
+                    code: code,
+                    grant_type: "authorization_code",
+                    redirect_uri:
+                        "https://glad-intensely-albacore.ngrok-free.app/api/oauth/tiktok/callback", //TODO: use env variable
+                }),
+            }
+        ).then((res) => res.json());
+
+        if ("error" in accessTokenRes) {
+            throw new InternalServerError(
+                `Error Getting TikTok Token: ${accessTokenRes.error} - ${accessTokenRes.error_description}`
+            );
+        }
+
+        // get user info
+        const userInfoRes: UserDataResponse = await fetch(
+            "https://open.tiktokapis.com/v2/user/info?fields=avatar_url,display_name'",
+            {
+                cache: "no-store",
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${accessTokenRes.access_token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        ).then((res) => res.json());
+
+        if (userInfoRes.error) {
+            throw new InternalServerError("Error Getting TikTok User Data");
+        }
+
+        // store tiktok account in database
+        await prisma.account.create({
+            data: {
+                userId: user.id,
+                type: "oauth",
+                provider: "tiktok",
+                providerAccountId: accessTokenRes.open_id,
+                refresh_token: accessTokenRes.refresh_token,
+                access_token: accessTokenRes.access_token,
+                expires_at:
+                    Math.floor(Date.now() / 1000) + accessTokenRes.expires_in,
+                refresh_expires_at:
+                    Math.floor(Date.now() / 1000) +
+                    accessTokenRes.refresh_expires_in,
+                token_type: accessTokenRes.token_type,
+                scope: accessTokenRes.scope,
+                id_token: null,
+                session_state: null,
+                avi_url: userInfoRes.data.user.avatar_url,
+                username: userInfoRes.data.user.display_name,
+            },
+        });
+    }
 
     /**
      * Sets access and refresh tokens
@@ -81,9 +166,10 @@ export class TikTokClient {
             refresh_token: this.account.refresh_token!,
         });
 
-        const response: RefreshTokenResponse | ErrorResponse = await fetch(
+        const response: TokenResponse | ErrorResponse = await fetch(
             `https://open.tiktokapis.com/v2/oauth/token/`,
             {
+                cache: "no-store",
                 method: "POST",
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
@@ -134,6 +220,7 @@ export class TikTokClient {
         const url = `https://open.tiktokapis.com/v2${endpoint}`;
 
         const response = await fetch(url, {
+            cache: "no-store",
             ...options,
             headers: {
                 Authorization: `Bearer ${this.account.access_token}`,
@@ -142,8 +229,10 @@ export class TikTokClient {
             },
         }).then((res) => res.json());
 
-        if (!response.ok) {
-            throw new Error(
+        console.log(response);
+
+        if (response.error !== "ok") {
+            throw new InternalServerError(
                 `API request failed: ${response.status} ${response.statusText}`
             );
         }
