@@ -34,17 +34,6 @@ export async function POST(req: Request) {
 
     if (!fileNames || fileNames.length === 0) {
         return new BadRequestError("No files provided").response;
-        // } else if (type === "video") {
-        //     if ("instagram" in platforms) {
-        //         // await createInstagramReel(`${setlisttUrl}/${fileNames[0]}`);
-        //     }
-        //     if ("tiktok" in platforms) {
-        //         const tiktokPost = await createTikTokVideoPost(
-        //             credentials.tiktok?.access_token,
-        //             `${s3Url}/${fileNames[0]}`
-        //         );
-        //     }
-        //     return new Response("Post created successfully");
     } else {
         // Post to Instagram
         if (platforms.includes("instagram")) {
@@ -89,6 +78,6 @@ export async function POST(req: Request) {
             }
         }
 
-        return new Response("Post created successfully");
+        return new Response("Post created successfully", { status: 200 });
     }
 }

@@ -37,7 +37,7 @@ export default function PostPage() {
                 </Select>
             </div>
             <SessionProvider>
-                {/* {type === "vid" && <UploadVidForm />} */}
+                {type === "vid" && <UploadVidForm />}
                 {type === "pics" && <UploadPicsForm />}
             </SessionProvider>
         </div>

@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import InstagramPost from "../screens/InstagramPost";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
+import { resizeImage } from "@/lib/image";
 
 const MAX_FILE_SIZE = 30e7; // 300 MB in bytes
 const ACCEPTED_FILE_TYPES = [
@@ -104,13 +105,14 @@ export default function UploadPicsForm() {
 
             for (let i = 0; i < values.files.length; i++) {
                 // upload media to S3 using the signed URL
+
                 const s3Response = await fetch(urls[i], {
                     cache: "no-store",
                     method: "PUT",
                     headers: {
                         "Content-Type": values.files[i].type, // Set the content type to the file type
                     },
-                    body: values.files[i],
+                    body: await resizeImage(values.files[i]),
                 });
 
                 if (s3Response.ok) {
