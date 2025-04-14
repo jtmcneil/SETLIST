@@ -5,14 +5,14 @@ interface Props {
     username: string;
     aviUrl: string;
     location: string;
-    imageUrl: string;
+    imageUrl: string | null;
     caption: string;
 }
 
 export default function InstagramPost(props: Props) {
     return (
-        <div className="paper shadow-inner p-4 flex justify-center items-center">
-            <div className="bg-white border shadow-md max-w-md">
+        <div className="paper shadow-inner p-4 flex justify-center items-center h-full">
+            <div className="bg-white border shadow-md max-w-md w-full h-full flex flex-col justify-center">
                 <div className="flex items-center px-4 py-3">
                     <Image
                         className="h-8 w-8 rounded-full"
@@ -30,12 +30,15 @@ export default function InstagramPost(props: Props) {
                         </span>
                     </div>
                 </div>
-                <Image
-                    src={props.imageUrl}
-                    width={500} // Set the width of the image
-                    height={500} // Set the height of the image
-                    alt="your image"
-                />
+                {!props.imageUrl && <div className="h-1/2 bg-gray-200" />}
+                {props.imageUrl && (
+                    <Image
+                        src={props.imageUrl}
+                        width={500} // Set the width of the image
+                        height={500} // Set the height of the image
+                        alt="your image"
+                    />
+                )}
                 <div className="flex items-center justify-between mx-4 mt-3 mb-2">
                     <div className="flex gap-5">
                         <svg

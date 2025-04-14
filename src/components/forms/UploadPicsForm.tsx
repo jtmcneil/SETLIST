@@ -218,7 +218,9 @@ export default function UploadPicsForm() {
                             name="files"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Pics</FormLabel>
+                                    <FormLabel className="text-base">
+                                        Pics
+                                    </FormLabel>
                                     <FormControl>
                                         <Input
                                             id="files"
@@ -256,7 +258,9 @@ export default function UploadPicsForm() {
                             name="caption"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Caption</FormLabel>
+                                    <FormLabel className="text-base">
+                                        Caption
+                                    </FormLabel>
                                     <FormControl>
                                         <Textarea
                                             placeholder="Write something about your post... or don't"
@@ -289,7 +293,7 @@ export default function UploadPicsForm() {
                     aviUrl={session?.user.accounts[0].avi_url} // TODO switch to insta
                     username={session?.user.accounts[0].username} // TODO switch to insta
                     caption={caption}
-                    imageUrl={fileUrl ? fileUrl : ""}
+                    imageUrl={fileUrl}
                     location=""
                 />
             </section>

@@ -74,7 +74,7 @@ export class InternalServerError extends ApiError {
 
 // Error 501
 export class NotImplementedError extends ApiError {
-    constructor(message: string) {
+    constructor(message: string = "This is not yet implemented") {
         super(message, 501);
         Object.setPrototypeOf(this, NotImplementedError.prototype);
     }

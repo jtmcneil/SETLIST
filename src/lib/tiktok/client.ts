@@ -191,7 +191,7 @@ export class TikTokClient {
     /**
      * Ensures the access token is valid
      *
-     * @returns nothing
+     * @returns a promise that resolves after the acces token is verified
      * @throws If there is a failure refreshing the token
      */
     private async ensureValidToken(): Promise<void> {

@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { InstagramClient } from "@/lib/instagram/client";
 // import { createInstagramPost, createInstagramReel } from "@/lib/instagram";
 import { prisma } from "@/lib/prisma";
 import { TikTokClient } from "@/lib/tiktok/client";
@@ -45,10 +46,30 @@ export async function POST(req: Request) {
         //     }
         //     return new Response("Post created successfully");
     } else {
-        // const instagramPost = await createInstagramPost(
-        //     fileNames.map((fileName: string) => `${setlisttUrl}/${fileName}`)
-        // );
+        // Post to Instagram
+        if (platforms.includes("instagram")) {
+            const instagramAccount = accounts.find(
+                (account) => account.provider === "instagram"
+            );
+            if (!instagramAccount) {
+                return new BadRequestError("No Instagram account found")
+                    .response;
+            }
+            try {
+                const instagram = new InstagramClient(instagramAccount);
+                const post = await instagram.createPost(
+                    fileNames.map(
+                        (fileName: string) => `${setlisttUrl}/${fileName}`
+                    ),
+                    caption
+                );
+                console.log(post);
+            } catch (e) {
+                return ApiError.getResponse(e);
+            }
+        }
 
+        // Post to TikTok
         if (platforms.includes("tiktok")) {
             const tiktokAccount = accounts.find(
                 (account) => account.provider === "tiktok"
@@ -68,6 +89,6 @@ export async function POST(req: Request) {
             }
         }
 
-        return new Response("Post created successfully", { status: 201 });
+        return new Response("Post created successfully");
     }
 }
