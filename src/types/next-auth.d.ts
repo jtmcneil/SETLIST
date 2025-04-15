@@ -6,9 +6,9 @@ declare module "next-auth" {
         email: string;
         image: string;
         accounts: {
-            provider: string | null;
-            avi_url: string | null;
-            username: string | null;
+            provider: string;
+            avi_url: string;
+            username: string;
         }[];
     }
 

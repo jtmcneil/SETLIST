@@ -22,12 +22,7 @@ import { useSession } from "next-auth/react";
 import { resizeImage } from "@/lib/image";
 
 const MAX_FILE_SIZE = 30e7; // 300 MB in bytes
-const ACCEPTED_FILE_TYPES = [
-    "image/jpeg",
-    "image/jpg",
-    // "video/mp4",
-    // "video/quicktime",
-];
+const ACCEPTED_FILE_TYPES = ["image/jpeg", "image/jpg"];
 const PLATFORMS = [
     { id: "instagram", label: "Instagram" },
     { id: "tiktok", label: "TikTok" },
@@ -36,7 +31,15 @@ const PLATFORMS = [
 export default function UploadPicsForm() {
     const { data: session } = useSession();
     const [caption, setCaption] = useState<string>("");
-    const [fileUrl, setFileUrl] = useState<string | null>(null);
+    const [fileUrls, setFileUrls] = useState<string[] | null>(null);
+
+    // get accounts
+    const instagramAccount = session?.user.accounts.find(
+        (account) => account.provider == "instagram"
+    );
+    const tiktokAccount = session?.user.accounts.find(
+        (account) => account.provider == "tiktok"
+    );
 
     // define schema
     const formSchema = z.object({
@@ -231,14 +234,17 @@ export default function UploadPicsForm() {
                                                 field.onChange(e.target.files)
                                             }
                                             onChangeCapture={(e) => {
-                                                const [file] =
+                                                const files =
                                                     e.currentTarget.files;
-                                                if (file) {
-                                                    setFileUrl(
+                                                if (files) {
+                                                    const urls = Array.from(
+                                                        files
+                                                    ).map((file) =>
                                                         URL.createObjectURL(
                                                             file
                                                         )
                                                     );
+                                                    setFileUrls(urls);
                                                 }
                                             }}
                                             multiple={true}
@@ -291,13 +297,15 @@ export default function UploadPicsForm() {
                 </Form>
             </section>
             <section className="flex-1">
-                <InstagramPost
-                    aviUrl={session?.user.accounts[0].avi_url} // TODO switch to insta
-                    username={session?.user.accounts[0].username} // TODO switch to insta
-                    caption={caption}
-                    imageUrl={fileUrl}
-                    location=""
-                />
+                {instagramAccount && (
+                    <InstagramPost
+                        aviUrl={instagramAccount.avi_url} // TODO switch to insta
+                        username={instagramAccount.username} // TODO switch to insta
+                        caption={caption}
+                        imageUrls={fileUrls}
+                        location=""
+                    />
+                )}
             </section>
         </div>
     );

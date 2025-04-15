@@ -1,11 +1,19 @@
 "use client";
+
 import Image from "next/image";
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+} from "@/components/ui/carousel";
 
 interface Props {
     username: string;
-    aviUrl: string;
+    aviUrl: string | null;
     location: string;
-    imageUrl: string | null;
+    imageUrls: string[] | null;
     caption: string;
 }
 
@@ -14,13 +22,19 @@ export default function InstagramPost(props: Props) {
         <div className="paper shadow-inner p-4 flex justify-center items-center h-full">
             <div className="bg-white border shadow-md max-w-md w-full h-full flex flex-col justify-center">
                 <div className="flex items-center px-4 py-3">
-                    <Image
-                        className="h-8 w-8 rounded-full"
-                        src={props.aviUrl}
-                        alt="your profile image"
-                        height={300} // Set the height of the image
-                        width={300} // Set the width of the image
-                    />
+                    {!props.aviUrl && (
+                        <div className="h-8 w-8 rounded-full bg-gray-200" />
+                    )}
+                    {props.aviUrl && (
+                        <Image
+                            className="h-8 w-8 rounded-full"
+                            src={props.aviUrl}
+                            alt="your profile image"
+                            height={300} // Set the height of the image
+                            width={300} // Set the width of the image
+                        />
+                    )}
+
                     <div className="ml-3 ">
                         <span className="text-sm font-semibold antialiased block leading-tight">
                             {props.username ? props.username : ""}
@@ -30,14 +44,24 @@ export default function InstagramPost(props: Props) {
                         </span>
                     </div>
                 </div>
-                {!props.imageUrl && <div className="h-1/2 bg-gray-200" />}
-                {props.imageUrl && (
-                    <Image
-                        src={props.imageUrl}
-                        width={500} // Set the width of the image
-                        height={500} // Set the height of the image
-                        alt="your image"
-                    />
+                {!props.imageUrls && <div className="h-1/2 bg-gray-200" />}
+                {props.imageUrls && (
+                    <Carousel>
+                        <CarouselContent>
+                            {props.imageUrls.map((img, i) => (
+                                <CarouselItem key={i}>
+                                    <Image
+                                        src={img}
+                                        width={500} // Set the width of the image
+                                        height={500} // Set the height of the image
+                                        alt="your image"
+                                    />
+                                </CarouselItem>
+                            ))}
+                        </CarouselContent>
+                        <CarouselPrevious className="left-2" />
+                        <CarouselNext className="right-2" />
+                    </Carousel>
                 )}
                 <div className="flex items-center justify-between mx-4 mt-3 mb-2">
                     <div className="flex gap-5">
@@ -56,9 +80,9 @@ export default function InstagramPost(props: Props) {
                             width="24"
                         >
                             <path
-                                clip-rule="evenodd"
+                                clipRule="evenodd"
                                 d="M47.5 46.1l-2.8-11c1.8-3.3 2.8-7.1 2.8-11.1C47.5 11 37 .5 24 .5S.5 11 .5 24 11 47.5 24 47.5c4 0 7.8-1 11.1-2.8l11 2.8c.8.2 1.6-.6 1.4-1.4zm-3-22.1c0 4-1 7-2.6 10-.2.4-.3.9-.2 1.4l2.1 8.4-8.3-2.1c-.5-.1-1-.1-1.4.2-1.8 1-5.2 2.6-10 2.6-11.4 0-20.6-9.2-20.6-20.5S12.7 3.5 24 3.5 44.5 12.7 44.5 24z"
-                                fill-rule="evenodd"
+                                fillRule="evenodd"
                             ></path>
                         </svg>
                         <svg

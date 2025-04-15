@@ -7,9 +7,9 @@ export default async function Nav() {
     const session = await auth();
 
     return (
-        <nav className="fixed top-0 w-full flex justify-between items-center h-20 px-48 border-b-2 border-[#94afc4]  bg-white">
+        <nav className="fixed z-40 op-0 w-full flex justify-between items-center h-20 px-48 border-b-2 border-[#94afc4]  bg-white">
             <Link href={"/"}>
-                <div className="text-lg font-bold">Setlistt</div>
+                <div className="text-lg font-bold">Setlist</div>
             </Link>
             <div className="flex items-center space-x-4">
                 <ul className="flex space-x-4">

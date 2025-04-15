@@ -16,7 +16,7 @@ export async function POST(req: Request) {
         return new UnauthorizedError("Unauthorized request").response;
     }
 
-    const { fileNames, caption, platforms } = await req.json();
+    const { fileName, caption, platforms } = await req.json();
 
     const accounts = await prisma.account.findMany({
         where: {
@@ -33,8 +33,8 @@ export async function POST(req: Request) {
         ).response;
     }
 
-    if (!fileNames || fileNames.length === 0) {
-        return new BadRequestError("No files provided").response;
+    if (!fileName) {
+        return new BadRequestError("No file provided").response;
     } else {
         // Post to Instagram
         if (platforms.includes("instagram")) {
@@ -47,10 +47,8 @@ export async function POST(req: Request) {
             }
             try {
                 const instagram = new InstagramClient(instagramAccount);
-                const post = await instagram.createPost(
-                    fileNames.map(
-                        (fileName: string) => `${setlisttUrl}/${fileName}`
-                    ),
+                const post = await instagram.createReel(
+                    `${setlisttUrl}/${fileName}`,
                     caption
                 );
                 console.log(post);
@@ -69,8 +67,8 @@ export async function POST(req: Request) {
             }
             try {
                 const tiktok = new TikTokClient(tiktokAccount);
-                const post = await tiktok.createPhotoPost(
-                    fileNames.map((fileName: string) => `${s3Url}/${fileName}`),
+                const post = await tiktok.createVideoPost(
+                    `${s3Url}/${fileName}`,
                     caption
                 );
                 console.log(post);

@@ -36,5 +36,5 @@ export const checkAuth = async () => {
     const session = await auth();
     if (!session) {
         redirect("/api/auth/signin");
-    }
+    } else return session;
 };
