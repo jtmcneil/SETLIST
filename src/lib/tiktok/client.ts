@@ -1,5 +1,4 @@
 // src/lib/tiktok/client.ts
-import { use } from "react";
 import {
     TokenResponse,
     UserDataResponse,
@@ -11,7 +10,6 @@ import {
 
 import { prisma } from "@/lib/prisma";
 import { InternalServerError, UnauthorizedError } from "@/types/errors";
-import { json } from "stream/consumers";
 
 /**
  * A client for interacting with the TikTok API with automatic token refresh
@@ -229,9 +227,7 @@ export class TikTokClient {
             },
         }).then((res) => res.json());
 
-        console.log(response);
-
-        if (response.error !== "ok") {
+        if (response?.error?.code !== "ok") {
             throw new InternalServerError(
                 `API request failed: ${response.status} ${response.statusText}`
             );

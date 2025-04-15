@@ -13,7 +13,7 @@ import UploadVidForm from "@/components/forms/UploadVidForm";
 import { SessionProvider } from "next-auth/react";
 
 export default function PostPage() {
-    const [type, setType] = useState("pics");
+    const [type, setType] = useState("");
 
     return (
         <div className="flex flex-col m-10 p-10 shadow-lg bg-white justify-between gap-4">
@@ -25,7 +25,7 @@ export default function PostPage() {
                 </p>
                 <Select onValueChange={setType} defaultValue={type}>
                     <SelectTrigger>
-                        <SelectValue placeholder="Theme" />
+                        <SelectValue placeholder="Content Type" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="vid">Vid</SelectItem>

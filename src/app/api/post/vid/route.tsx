@@ -53,6 +53,7 @@ export async function POST(req: Request) {
                 );
                 console.log(post);
             } catch (e) {
+                console.error(e);
                 return ApiError.getResponse(e);
             }
         }
@@ -73,6 +74,7 @@ export async function POST(req: Request) {
                 );
                 console.log(post);
             } catch (e) {
+                console.error(e);
                 return ApiError.getResponse(e);
             }
         }

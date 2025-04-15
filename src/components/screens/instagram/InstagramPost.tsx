@@ -8,6 +8,7 @@ import {
     CarouselNext,
     CarouselPrevious,
 } from "@/components/ui/carousel";
+import PhoneScreen from "../PhoneScreen";
 
 interface Props {
     username: string;
@@ -19,8 +20,8 @@ interface Props {
 
 export default function InstagramPost(props: Props) {
     return (
-        <div className="paper shadow-inner p-4 flex justify-center items-center h-full">
-            <div className="bg-white border shadow-md max-w-md w-full h-full flex flex-col justify-center">
+        <PhoneScreen>
+            <div className="bg-white max-w-md w-full h-full flex flex-col justify-center my-5">
                 <div className="flex items-center px-4 py-3">
                     {!props.aviUrl && (
                         <div className="h-8 w-8 rounded-full bg-gray-200" />
@@ -115,6 +116,6 @@ export default function InstagramPost(props: Props) {
                     </p>
                 </div>
             </div>
-        </div>
+        </PhoneScreen>
     );
 }

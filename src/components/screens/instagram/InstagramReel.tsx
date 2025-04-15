@@ -8,7 +8,7 @@ import {
     CarouselNext,
     CarouselPrevious,
 } from "@/components/ui/carousel";
-import PhoneScreen from "./PhoneScreen";
+import PhoneScreen from "../PhoneScreen";
 
 interface Props {
     username: string;

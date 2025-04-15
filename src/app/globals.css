@@ -134,4 +134,13 @@
             ),
             linear-gradient(to top, transparent 80%, rgba(0, 0, 0, 0.4));
     }
+
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
 }
