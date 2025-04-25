@@ -1,9 +1,15 @@
 "use client";
 
 import { z } from "zod";
+import { cn } from "@/lib/utils";
+import { load, transcode } from "@/lib/ffmpeg";
+import InstagramReel from "../screens/instagram/InstagramReel";
+
+import { useSession } from "next-auth/react";
+import { useState } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { load, transcode } from "@/lib/ffmpeg";
 import {
     Form,
     FormControl,
@@ -16,11 +22,13 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
+import { Switch } from "../ui/switch";
 import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button";
 import { Input } from "@/components/ui/input";
-import { useSession } from "next-auth/react";
-import { useState } from "react";
-import InstagramReel from "../screens/instagram/InstagramReel";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Button } from "../ui/button";
+import { CalendarIcon } from "lucide-react";
+import { Calendar } from "../ui/calendar";
 
 const MAX_FILE_SIZE = 30e7; // 300 MB in bytes
 const ACCEPTED_FILE_TYPES = ["video/mp4", "video/quicktime"];
@@ -41,6 +49,7 @@ export default function UploadVidForm() {
     const { data: session } = useSession();
     const [caption, setCaption] = useState<string>("");
     const [fileUrl, setFileUrl] = useState<string | null>(null);
+    const [scheduled, setScheduled] = useState<boolean>(false);
     const [progress, setProgress] = useState<number>(0);
     const [status, setStatus] = useState<STATUS>(STATUS.start);
 
@@ -63,17 +72,17 @@ export default function UploadVidForm() {
             typeof window === "undefined"
                 ? z.any() // Server-side fallback z
                 : z
-                      .instanceof(FileList)
+                      .instanceof(FileList, { message: "No files selected." })
                       .refine(
                           (files) => files?.length === 1,
-                          "File is required."
+                          "Only 1 file please."
                       )
                       .refine(
                           (files) =>
                               Array.from(files).every((file) =>
                                   ACCEPTED_FILE_TYPES.includes(file.type)
                               ),
-                          "Only mp4, & mov formats are supported."
+                          "Only mp4 & mov formats are supported."
                       )
                       .refine(
                           (files) =>
@@ -85,6 +94,8 @@ export default function UploadVidForm() {
                           } MB.` // Convert bytes to MB for the error message
                       ),
         caption: z.string().optional(), // TODO - add validation for length
+        scheduled: z.boolean().default(false),
+        datetime: z.date().optional(),
     });
 
     // Form definition
@@ -94,6 +105,23 @@ export default function UploadVidForm() {
             platforms: ["instagram", "tiktok"],
         },
     });
+
+    // Input handlers
+    function handleDateSelect(date: Date | undefined) {
+        if (date) {
+            form.setValue("datetime", date);
+        }
+    }
+
+    function handleTimeChange(time: string) {
+        console.log(time);
+        const currentDate = form.getValues("datetime") || new Date();
+        const newDate = new Date(currentDate);
+        const [hour, minute] = time.split(":").map(Number);
+        newDate.setHours(hour);
+        newDate.setMinutes(minute);
+        form.setValue("datetime", newDate);
+    }
 
     // Submit handler
     function onSubmit(values: z.infer<typeof formSchema>) {
@@ -149,6 +177,8 @@ export default function UploadVidForm() {
                         fileName,
                         caption,
                         platforms: values.platforms,
+                        scheduled: values.scheduled,
+                        datetime: values.datetime,
                     }),
                 });
 
@@ -165,7 +195,7 @@ export default function UploadVidForm() {
     }
 
     return (
-        <div className="flex w-full gap-4">
+        <div className="flex flex-col sm:flex-row w-full gap-4">
             <section className="flex-1">
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -311,6 +341,139 @@ export default function UploadVidForm() {
                                     </FormItem>
                                 )}
                             />
+                            <div className="flex flex-col gap-3 rounded-lg border p-3 shadow-sm">
+                                <FormField
+                                    control={form.control}
+                                    name="scheduled"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <div className="flex flex-row items-center justify-between">
+                                                <div className="space-y-0.5 w-3/4">
+                                                    <FormLabel className="text-base">
+                                                        Scheduled Post
+                                                    </FormLabel>
+                                                    <FormDescription className="">
+                                                        Schedule this post for a
+                                                        later date or time
+                                                    </FormDescription>
+                                                </div>
+                                                <FormControl>
+                                                    <Switch
+                                                        checked={field.value}
+                                                        onCheckedChange={(
+                                                            e
+                                                        ) => {
+                                                            field.onChange(e);
+                                                            setScheduled(e);
+                                                        }}
+                                                        aria-readonly
+                                                    />
+                                                </FormControl>
+                                            </div>
+                                        </FormItem>
+                                    )}
+                                />
+                                {scheduled && (
+                                    <FormField
+                                        control={form.control}
+                                        name="datetime"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-col">
+                                                <FormLabel className="text-base">
+                                                    Date & Time
+                                                </FormLabel>
+                                                <Popover>
+                                                    <PopoverTrigger asChild>
+                                                        <FormControl>
+                                                            <Button
+                                                                variant={
+                                                                    "outline"
+                                                                }
+                                                                className={cn(
+                                                                    "w-full pl-3 text-left font-normal",
+                                                                    !field.value &&
+                                                                        "text-muted-foreground"
+                                                                )}
+                                                            >
+                                                                {field.value ? (
+                                                                    `${field.value.toLocaleString(
+                                                                        [],
+                                                                        {
+                                                                            month: "short",
+                                                                            day: "2-digit",
+                                                                            hour: "2-digit",
+                                                                            minute: "2-digit",
+                                                                            hour12: true,
+                                                                        }
+                                                                    )}`
+                                                                ) : (
+                                                                    <span>
+                                                                        MM/DD/YYYY
+                                                                        hh:mm aa
+                                                                    </span>
+                                                                )}
+                                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                            </Button>
+                                                        </FormControl>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent className="w-auto p-0">
+                                                        <div className="flex flex-col">
+                                                            <Calendar
+                                                                mode="single"
+                                                                selected={
+                                                                    field.value
+                                                                }
+                                                                onSelect={
+                                                                    handleDateSelect
+                                                                }
+                                                                disabled={(
+                                                                    date
+                                                                ) =>
+                                                                    date <
+                                                                    new Date(
+                                                                        new Date().setDate(
+                                                                            new Date().getDate() -
+                                                                                1
+                                                                        )
+                                                                    )
+                                                                }
+                                                            />
+                                                            <div className="p-4">
+                                                                <FormLabel className="text-base">
+                                                                    Time
+                                                                </FormLabel>
+                                                                <Input
+                                                                    // defaultValue={
+                                                                    //     field.value
+                                                                    //         ? `${field.value.getHours()}:${field.value.getMinutes()}`
+                                                                    //         : ""
+                                                                    // }
+                                                                    id="time"
+                                                                    type="time"
+                                                                    onChange={(
+                                                                        e
+                                                                    ) => {
+                                                                        handleTimeChange(
+                                                                            e
+                                                                                .target
+                                                                                .value
+                                                                        );
+                                                                    }}
+                                                                ></Input>
+                                                            </div>
+                                                        </div>
+                                                    </PopoverContent>
+                                                </Popover>
+                                                <FormDescription>
+                                                    Enter the time you want this
+                                                    post to uhh... post
+                                                </FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                )}
+                            </div>
                             {status === STATUS.start && (
                                 <InteractiveHoverButton
                                     type="submit"
@@ -330,7 +493,7 @@ export default function UploadVidForm() {
                 </Form>
             </section>
             <section className="flex-1">
-                <div className="paper shadow-inner px-16 py-4 flex justify-center items-center h-full">
+                <div className="paper shadow-inner px-2 md:px-4 lg:px-6 xl:px-16 py-4 flex justify-center items-center h-full">
                     {instagramAccount && (
                         <InstagramReel
                             aviUrl={instagramAccount.avi_url} // TODO switch to insta

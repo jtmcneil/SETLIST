@@ -21,13 +21,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     username: true,
                 },
             });
-            const userSession = (({
-                expires,
-                user: { email, name, image },
-            }) => ({ expires, user: { email, name, image, accounts } }))(
-                session
-            );
-            return userSession;
+
+            return {
+                ...session,
+                user: {
+                    id: session.user.id,
+                    name: session.user.name,
+                    email: session.user.email,
+                    image: session.user.image,
+                    accounts: accounts, // Add your custom field
+                },
+            };
         },
     },
 });

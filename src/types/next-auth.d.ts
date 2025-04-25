@@ -7,7 +7,7 @@ declare module "next-auth" {
         image: string;
         accounts: {
             provider: string;
-            avi_url: string;
+            avi_url: string | null;
             username: string;
         }[];
     }

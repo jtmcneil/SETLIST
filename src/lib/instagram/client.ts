@@ -10,19 +10,20 @@ import {
     MediaSuccessResponse,
     PublishMediaParams,
 } from "./types";
+import { Account } from "@/types/db";
 
 /**
  * A client for interacting with the Instagram API with automatic token refresh
  */
 export class InstagramClient {
-    private account: DB.Account;
+    private account: Account;
 
     /**
      * Creates a new Instagram API Client
      *
      * @param account - The account returned from the DB
      */
-    constructor(account: DB.Account) {
+    constructor(account: Account) {
         this.account = account;
     }
 

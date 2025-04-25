@@ -9,20 +9,21 @@ import {
 } from "./types";
 
 import { prisma } from "@/lib/prisma";
+import { Account } from "@/types/db";
 import { InternalServerError, UnauthorizedError } from "@/types/errors";
 
 /**
  * A client for interacting with the TikTok API with automatic token refresh
  */
 export class TikTokClient {
-    private account: DB.Account;
+    private account: Account;
 
     /**
      * Creates a new TikTok API client
      *
      * @param account - The account returned from the DB
      */
-    constructor(account: DB.Account) {
+    constructor(account: Account) {
         this.account = account;
     }
 
