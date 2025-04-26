@@ -1,6 +1,5 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { randomBytes } from "crypto";
 
 const s3 = new S3Client();
 const bucketName = process.env.AWS_BUCKET_NAME!;

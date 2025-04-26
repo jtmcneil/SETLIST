@@ -95,10 +95,12 @@ export default function UploadPicsForm() {
                       ),
         caption: z.string().optional(), // TODO - add validation for length
         scheduled: z.boolean().default(false),
-        datetime: z.date().optional(),
-        // .refine((date) => {
-        //     return !date || date > new Date();
-        // }, "Date must be some time in the future"),
+        datetime: z
+            .date()
+            .optional()
+            .refine((date) => {
+                return !!!date || date > new Date();
+            }, "Date must be some time in the future"),
     });
 
     // Form definition

@@ -11,19 +11,20 @@ import {
 import UploadPicsForm from "@/components/forms/UploadPicsForm";
 import UploadVidForm from "@/components/forms/UploadVidForm";
 import { SessionProvider } from "next-auth/react";
+import UploadForm from "@/components/forms/UploadForm";
 
 export default function PostPage() {
     const [type, setType] = useState("");
 
     return (
         <div className="flex flex-col m-10 p-10 shadow-lg bg-white justify-between gap-4">
-            <div className="flex flex-col gap-4 mb-4 pb-4 border-b-2">
+            <div className="flex flex-col ">
                 <h1 className="text-3xl font-bold">Post up‼️</h1>
                 <p>
                     Select the type of content you want to upload, then go
                     bananas 🍌🍌🍌
                 </p>
-                <Select onValueChange={setType} defaultValue={type}>
+                {/* <Select onValueChange={setType} defaultValue={type}>
                     <SelectTrigger>
                         <SelectValue placeholder="Content Type" />
                     </SelectTrigger>
@@ -34,11 +35,12 @@ export default function PostPage() {
                             Story (coming soon)
                         </SelectItem>
                     </SelectContent>
-                </Select>
+                </Select> */}
             </div>
             <SessionProvider>
-                {type === "vid" && <UploadVidForm />}
-                {type === "pics" && <UploadPicsForm />}
+                {/* {type === "vid" && <UploadVidForm />}
+                {type === "pics" && <UploadPicsForm />} */}
+                <UploadForm />
             </SessionProvider>
         </div>
     );

@@ -25,28 +25,35 @@ export async function POST(req: Request) {
             platforms,
         };
         await schedulePostVid(datetime, params);
-        return new Response("Post successfully scheduled.");
+    } else {
+        const accounts: Account[] = await prisma.account.findMany({
+            where: {
+                userId: session.user.id,
+                provider: {
+                    in: platforms,
+                },
+            },
+        });
+
+        if (accounts.length === 0) {
+            return new UnauthorizedError(
+                "No accounts found, connect accounts to post"
+            ).response;
+        }
+
+        if (!fileName) {
+            return new BadRequestError("No file provided").response;
+        } else {
+            await postVid(fileName, caption, platforms, accounts);
+        }
     }
 
-    const accounts: Account[] = await prisma.account.findMany({
-        where: {
+    prisma.post.create({
+        data: {
             userId: session.user.id,
-            provider: {
-                in: platforms,
-            },
+            postedAt: scheduled ? datetime : new Date(),
         },
     });
 
-    if (accounts.length === 0) {
-        return new UnauthorizedError(
-            "No accounts found, connect accounts to post"
-        ).response;
-    }
-
-    if (!fileName) {
-        return new BadRequestError("No file provided").response;
-    } else {
-        await postVid(fileName, caption, platforms, accounts);
-    }
     return new NextResponse("Post created successfully");
 }

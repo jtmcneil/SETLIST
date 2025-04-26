@@ -12,7 +12,6 @@ const agenda = new Agenda({
     db: {
         address: dbUrl,
     },
-    processEvery: "30 seconds",
 });
 
 const stopAgenda = async (): Promise<void> => {

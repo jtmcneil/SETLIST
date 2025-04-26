@@ -38,11 +38,11 @@ const PLATFORMS = [
 ];
 enum STATUS {
     start = "",
-    transcoding = "Transcoding video",
-    uploading = "Uploading video",
-    posting = "Posting video",
+    transcoding = "Transcoding media",
+    uploading = "Uploading media",
+    posting = "Posting media",
     done = "Post complete",
-    error = "There was an error posting your video",
+    error = "There was an error with your psot",
 }
 
 export default function UploadVidForm() {
