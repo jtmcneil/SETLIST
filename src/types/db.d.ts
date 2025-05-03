@@ -51,6 +51,23 @@ export interface Account {
     user?: User;
 }
 
+export interface Post {
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+    userId: string;
+    type: string;
+    caption: string;
+    media: string[];
+    platforms: string[];
+    agendaId: string | null;
+    instagramId: string | null;
+    tikTokId: string | null;
+    instagramUrl: string | null;
+    tikTokUrl: string | null;
+    postedAt: Date;
+}
+
 /**
  * Types for create operations
  */
@@ -85,6 +102,20 @@ export interface AccountCreateInput {
     createdAt?: Date;
     updatedAt?: Date;
     user?: UserCreateNestedOneInput;
+}
+
+export interface PostCreateInput {
+    userId: string;
+    type: "pics" | "vid";
+    caption?: string;
+    postedAt: Date;
+    media?: string[];
+    platforms: string[];
+    agendaId?: string;
+    instagramId?: string;
+    tikTokId?: string | null;
+    instagramUrl?: string | null;
+    tikTokUrl?: string | null;
 }
 
 /**

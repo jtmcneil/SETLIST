@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
                 hostname: "p16-common-sign-va.tiktokcdn-us.com",
                 pathname: "/**",
             },
+            {
+                protocol: "http",
+                hostname: "media.setlistt.com",
+                pathname: "/**",
+            },
         ],
     },
 };

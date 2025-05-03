@@ -1,46 +1,29 @@
 "use client";
 
-import { useState } from "react";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import UploadPicsForm from "@/components/forms/UploadPicsForm";
-import UploadVidForm from "@/components/forms/UploadVidForm";
 import { SessionProvider } from "next-auth/react";
-import UploadForm from "@/components/forms/UploadForm";
+import CreatePostForm from "@/components/forms/CreatePostForm";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 
 export default function PostPage() {
-    const [type, setType] = useState("");
+    const searchParams = useSearchParams();
+    const scheduled = searchParams.get("scheduled") === "true";
 
     return (
         <div className="flex flex-col m-10 p-10 shadow-lg bg-white justify-between gap-4">
             <div className="flex flex-col ">
-                <h1 className="text-3xl font-bold">Post up‼️</h1>
-                <p>
-                    Select the type of content you want to upload, then go
-                    bananas 🍌🍌🍌
-                </p>
-                {/* <Select onValueChange={setType} defaultValue={type}>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Content Type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="vid">Vid</SelectItem>
-                        <SelectItem value="pics">Pics</SelectItem>
-                        <SelectItem value="story" disabled>
-                            Story (coming soon)
-                        </SelectItem>
-                    </SelectContent>
-                </Select> */}
+                <div className="w-8 h-8 p-1 mb-4 flex items-center justify-center border border-gray-400 rounded-full hover:bg-gray-100 transition-colors">
+                    <Link href={"/dashboard"}>
+                        <ChevronLeft className="text-gray-400" />
+                    </Link>
+                </div>
+
+                <h1>New Post</h1>
+                <p>Select your post type, then go bananas </p>
             </div>
             <SessionProvider>
-                {/* {type === "vid" && <UploadVidForm />}
-                {type === "pics" && <UploadPicsForm />} */}
-                <UploadForm />
+                <CreatePostForm scheduled={scheduled} />
             </SessionProvider>
         </div>
     );

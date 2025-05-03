@@ -67,9 +67,17 @@ model VerificationToken {
 model Post {
   id            String          @id @default(cuid())
   userId        String
+  type          String
+  caption       String          @default("")
+  media         String[]        @default([])
+  platforms     String[]        @default([])
+
   agendaId      String?
   instagramId   String?
   tikTokId      String?
+
+  instagramUrl  String?
+  tikTokUrl     String?
   
   postedAt      DateTime
   createdAt     DateTime @default(now())

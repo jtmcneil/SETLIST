@@ -1,13 +1,19 @@
-enum Platform {
-    "instagram",
-    "tiktok",
-}
+// enum Platform {
+//     "instagram",
+//     "tiktok",
+// }
 
-export interface PostPayload {
+export interface CreatePostPayload {
     type: "vid" | "pics" | "story";
     fileNames: string[];
     caption: string;
     platforms: string[];
     scheduled: boolean;
     datetime?: Date;
+}
+
+export interface EditPostPayload {
+    postId: string;
+    caption?: string;
+    postedAt: Date;
 }

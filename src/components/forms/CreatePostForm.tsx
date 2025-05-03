@@ -39,7 +39,13 @@ import { CalendarIcon } from "lucide-react";
 import { Calendar } from "../ui/calendar";
 import InstagramReel from "../screens/instagram/InstagramReel";
 
-import { PostPayload } from "@/types/api";
+import { CreatePostPayload } from "@/types/api";
+import { redirect } from "next/navigation";
+import { set } from "date-fns";
+
+interface CreatePostFormProps {
+    scheduled?: boolean;
+}
 
 const PLATFORMS = [
     { id: "instagram", label: "Instagram" },
@@ -81,16 +87,19 @@ enum STATUS {
     transcoding = "Transcoding media",
     uploading = "Uploading media",
     posting = "Posting media",
-    done = "Post complete",
+    scheduling = "Scheduling post",
+    done = "All done!",
     error = "There was an error with your post",
 }
 
-export default function UploadForm() {
+export default function CreatePostForm(props: CreatePostFormProps) {
     const { data: session } = useSession();
     const [type, setType] = useState<postType | null>(null);
     const [caption, setCaption] = useState<string>("");
     const [fileUrls, setFileUrls] = useState<string[] | null>(null);
-    const [scheduled, setScheduled] = useState<boolean>(false);
+    const [scheduled, setScheduled] = useState<boolean>(
+        props.scheduled || false
+    );
     const [progress, setProgress] = useState<number>(0);
     const [status, setStatus] = useState<STATUS>(STATUS.start);
 
@@ -138,7 +147,7 @@ export default function UploadForm() {
                           } MB.` // Convert bytes to MB for the error message
                       ),
         caption: z.string().optional(), // TODO - add validation for length
-        scheduled: z.boolean().default(false),
+        scheduled: z.boolean(),
         datetime: z.date().optional(),
     });
 
@@ -148,6 +157,7 @@ export default function UploadForm() {
         defaultValues: {
             platforms: ["instagram", "tiktok"],
             datetime: new Date(),
+            scheduled: props.scheduled || false,
         },
     });
 
@@ -169,10 +179,10 @@ export default function UploadForm() {
     }
 
     // Submit handler
-    function onSubmit(values: z.infer<typeof formSchema>) {
+    function onSubmit(data: z.infer<typeof formSchema>) {
         const getS3UploadUrls = async (): Promise<string[]> => {
             const exts = [];
-            for (const file of values.files) {
+            for (const file of data.files) {
                 exts.push(file.name.split(".").pop());
             }
             const { urls } = await fetch("/api/s3", {
@@ -200,7 +210,7 @@ export default function UploadForm() {
             });
         };
 
-        const postMedia = async (body: PostPayload) => {
+        const postMedia = async (body: CreatePostPayload) => {
             await fetch("/api/post", {
                 cache: "no-store",
                 method: "POST",
@@ -217,7 +227,7 @@ export default function UploadForm() {
             setProgress(10);
             const ffmpeg = await load();
             setProgress(25);
-            const videoFile = await transcode(ffmpeg, values.files[0]);
+            const videoFile = await transcode(ffmpeg, data.files[0]);
             setProgress(60);
 
             // get S3 urls
@@ -236,14 +246,16 @@ export default function UploadForm() {
                     .pop() as string;
 
                 //if the upload is successful, send request to backend to post video
-                setStatus(STATUS.posting);
+                if (data.scheduled) setStatus(STATUS.scheduling);
+                else setStatus(STATUS.posting);
+
                 await postMedia({
                     type: "vid",
                     fileNames: [fileName],
                     caption,
-                    platforms: values.platforms,
-                    scheduled: values.scheduled,
-                    datetime: values.datetime,
+                    platforms: data.platforms,
+                    scheduled: data.scheduled,
+                    datetime: data.datetime,
                 });
 
                 //Complete
@@ -258,13 +270,14 @@ export default function UploadForm() {
         const uploadPics = async () => {
             const urls = await getS3UploadUrls();
             setProgress(10);
+            setStatus(STATUS.uploading);
 
             const fileNames: string[] = [];
 
-            for (let i = 0; i < values.files.length; i++) {
+            for (let i = 0; i < data.files.length; i++) {
                 // upload media to S3 using the signed URL
                 const s3Response = await uploadToS3(
-                    await resizeImage(values.files[i]),
+                    await resizeImage(data.files[i]),
                     urls[i]
                 );
 
@@ -275,7 +288,7 @@ export default function UploadForm() {
                         .pop() as string;
                     fileNames.push(fileName);
                     setProgress(
-                        (progress) => progress + 60 / values.files.length
+                        (progress) => progress + 60 / data.files.length
                     );
                 } else {
                     // TODO Handle the error
@@ -284,21 +297,25 @@ export default function UploadForm() {
             setProgress(70);
 
             //if the upload is successful, send request to backend to post pics
-            setStatus(STATUS.posting);
+            if (data.scheduled) setStatus(STATUS.scheduling);
+            else setStatus(STATUS.posting);
+
             await postMedia({
                 type: "pics",
                 fileNames,
                 caption,
-                platforms: values.platforms,
-                scheduled: values.scheduled,
-                datetime: values.datetime,
+                platforms: data.platforms,
+                scheduled: data.scheduled,
+                datetime: data.datetime,
             });
             setStatus(STATUS.done);
             setProgress(100);
+            await new Promise((resolve) => setTimeout(resolve, 1000)); // wait a second before resetting
+            redirect("/dashboard");
         };
-        if (values.type === "vid") {
+        if (data.type === "vid") {
             uploadVid();
-        } else if (values.type === "pics") {
+        } else if (data.type === "pics") {
             uploadPics();
         }
     }
@@ -500,9 +517,7 @@ export default function UploadForm() {
                                                             Scheduled Post
                                                         </FormLabel>
                                                         <FormDescription className="">
-                                                            Schedule this post
-                                                            for a later date or
-                                                            time
+                                                            Set it and forget it
                                                         </FormDescription>
                                                     </div>
                                                     <FormControl>
@@ -596,11 +611,16 @@ export default function UploadForm() {
                                                                         Time
                                                                     </FormLabel>
                                                                     <Input
-                                                                        // defaultValue={
-                                                                        //     field.value
-                                                                        //         ? `${field.value.getHours()}:${field.value.getMinutes()}`
-                                                                        //         : ""
-                                                                        // }
+                                                                        value={
+                                                                            field.value
+                                                                                ? field.value
+                                                                                      .toTimeString()
+                                                                                      .slice(
+                                                                                          0,
+                                                                                          5
+                                                                                      )
+                                                                                : ""
+                                                                        }
                                                                         id="time"
                                                                         type="time"
                                                                         onChange={(

@@ -9,7 +9,7 @@ export default async function Nav() {
     return (
         <nav className="fixed z-40 op-0 w-full flex justify-between items-center h-20 px-48 border-b-2 border-[#94afc4]  bg-white">
             <Link href={"/"}>
-                <div className="text-lg font-bold">Setlist</div>
+                <div className="text-lg font-bold">Setlistt</div>
             </Link>
             <div className="flex items-center space-x-4">
                 <ul className="flex space-x-4">

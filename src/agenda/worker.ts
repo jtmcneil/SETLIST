@@ -44,15 +44,25 @@ const stopAgenda = async (): Promise<void> => {
         });
 
         agenda.on("start", (job: Job) => {
-            console.log(`Job ${job.attrs.name} starting`);
+            console.log(
+                `${new Date().toLocaleString()}: Job ${job.attrs.name} starting`
+            );
         });
 
         agenda.on("success", (job: Job) => {
-            console.log(`Job ${job.attrs.name} executed successfully`);
+            console.log(
+                `${new Date().toLocaleString()}: Job ${
+                    job.attrs.name
+                } executed successfully`
+            );
         });
 
         agenda.on("fail", (err, job: Job) => {
-            console.log(`Job ${job.attrs.name} failed: ${err.message}`);
+            console.error(
+                `${new Date().toLocaleString()}: Job ${
+                    job.attrs.name
+                } failed: ${err.message}`
+            );
         });
 
         // Start the Agenda worker process

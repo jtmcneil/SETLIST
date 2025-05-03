@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Nav from "./nav";
-import Head from "next/head";
 
 export const metadata: Metadata = {
     title: "Setlist",
